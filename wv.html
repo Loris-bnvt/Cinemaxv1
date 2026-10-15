@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cinémax · lecteur</title>
+<style>html,body{margin:0;height:100%;background:#000;overflow:hidden}</style>
+</head>
+<body>
+<script>
+// Relais de l'app télé Cinémax (Samsung) : l'app est ouverte depuis un fichier, sans adresse web,
+// et YouTube refuse alors de lire ses vidéos. L'app ouvre cette page et lui confie le lecteur
+// de bande-annonce ; la page l'affiche ici, avec une vraie adresse, et renvoie les événements à l'app.
+(function () {
+  var done = false;
+  window.addEventListener('message', function (e) {
+    var d = e.data;
+    if (done || !d || typeof d.__cxHtml !== 'string') return;
+    done = true;
+    var bridge = '<script>window.ReactNativeWebView={postMessage:function(m){try{parent.postMessage({__cxWebView:1,m:String(m)},"*")}catch(e){}}};<\/script>';
+    document.open();
+    document.write(bridge + d.__cxHtml);
+    document.close();
+  });
+  function ready() {
+    if (!done) {
+      try { parent.postMessage({ __cxReady: 1 }, '*'); } catch (e) {}
+      setTimeout(ready, 400);
+    }
+  }
+  ready();
+})();
+</script>
+</body>
+</html>
