@@ -38,6 +38,16 @@ if [ -z "$DEVICE" ]; then
   exit 1
 fi
 
+# nom de fichier sans accent : l'envoi vers la télé échoue parfois avec « Cinémax.wgt »
+mkdir -p "$WORK/out"
+cp "$WGT" "$WORK/out/Cinemax.wgt"
 echo "▶ Installation sur « $DEVICE »…"
-"$TIZEN" install -n "$(basename "$WGT")" -t "$DEVICE" -- "$WORK/app"
+if ! "$TIZEN" install -n Cinemax.wgt -t "$DEVICE" -- "$WORK/out" | tee "$WORK/install.log" || grep -q "Fail" "$WORK/install.log"; then
+  MAC_IP="$(ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null)"
+  echo ""
+  echo "✗ La télé a refusé l'envoi."
+  echo "  Sur la télé : Apps → tape 12345 → mode développeur sur On, et l'adresse du Mac doit être : $MAC_IP"
+  echo "  Puis éteins et rallume la télé, et relance cette commande."
+  exit 1
+fi
 echo "✓ Cinémax est installé : ouvre-le depuis les applications de la télé."
